@@ -4056,6 +4056,11 @@ function home(){
 
 /* ---------- router ---------- */
 const state = {hero:'scarlett'};
+const CARD_RE = /^(?:[jc]\d+|day-\d+|ca-[a-z]+)$/;
+/* the page part of the address, without a card */
+function cardBase(){ try{ const r = parse(); if(r.page==='event') return 'events-e_'+r.slug; if(r.page==='sec') return r.hero ? 'heroes-pages-'+r.hero : r.sec+'-'+r.tab; }catch(e){} return ''; }
+/* a card that opens goes into the address bar; one that closes comes out of it */
+function cardUrl(c, open){ try{ const b = cardBase(); if(!b || !c || !c.id || !CARD_RE.test(c.id)) return; const cur = (location.hash||'').slice(1), mine = b+'-'+c.id, want = open ? mine : (cur===mine ? b : cur); if(want!==cur) history.replaceState(history.state, '', '#'+want); }catch(e){} }
 function parse(){
  let t = (location.hash||'#home').slice(1);
  t = t.replace(/[^A-Za-z0-9._~-]/g,'');
@@ -4066,13 +4071,13 @@ function parse(){
  if(t==='sources') return {page:'sources'};
  if(t==='glossary') return {page:'glossary'};
  const rm = t.match(/^roadmap(?:-([1-5]))?$/); if(rm) return {page:'roadmap',stage:rm[1]||''};
- const m = t.match(/^heroes-pages-([a-z]+)$/); if(m) return {page:'sec',sec:'heroes',tab:'pages',hero:m[1]};
- const em = t.match(/^events-e_([a-z0-9]+)$/); if(em && EVENT_BY[em[1]]) return {page:'event', ev:EVENT_BY[em[1]]};
+ const m = t.match(/^heroes-pages-([a-z]+?)(?:-([jc]\d+|day-\d+|ca-[a-z]+))?$/); if(m) return {page:'sec',sec:'heroes',tab:'pages',hero:m[1],card:m[2]||''};
+ const em = t.match(/^events-e_([a-z0-9]+)(?:-(.+))?$/); if(em && EVENT_BY[em[1]]) return {page:'event', ev:EVENT_BY[em[1]], slug:em[1], card:CARD_RE.test(em[2]||'') ? em[2] : ''};
  const parts = t.split('-'); const s = S.find(x=>x.id===parts[0]);
  if(!s) return {page:'home'};
  if(s.id==='events' && ['weekly','wars','more'].indexOf(parts[1])>=0) return {page:'sec',sec:'events',tab:'all',group:parts[1]};
  const tab = s.tabs.find(x=>x[0]===parts[1]) || s.tabs[0];
- return {page:'sec',sec:s.id,tab:tab[0],card:(parts[2] && /^j\d+$/.test(parts[2])) ? parts[2] : ''};
+ return {page:'sec',sec:s.id,tab:tab[0],card:CARD_RE.test(parts.slice(2).join('-')) ? parts.slice(2).join('-') : ''};
 }
 
 /* ---------- item icons: game assets via zagameguides / policechiefwiki; drawn SVGs for shops the sites do not show ---------- */
@@ -4272,7 +4277,8 @@ const FOLD_SECS = new Set(["heroes", "troops", "gear", "tech", "buildings", "dia
 /* sections laid out like the event pages: a hub, and pages with a back pill instead of a tab bar */
 const HUB_ONLY = new Set(["heroes", "troops", "gear", "tech", "buildings", "diamonds", "marches", "pvp", "events", "rewards", "island"]);
 function foldInit(root){
- root.querySelectorAll('.card.fold').forEach(c=>{
+ const pageKey = cardBase();
+ root.querySelectorAll('.card.fold').forEach((c,ci)=>{
   const fi = Array.prototype.find.call(c.classList, k=>k.indexOf('fi-')===0);
   if(fi && FOLD_ICON[fi.slice(3)] && c.firstElementChild && c.firstElementChild.tagName==='H3'){
    const h = c.firstElementChild, wrap = document.createElement('div'); wrap.className = 'chead'; wrap.innerHTML = iconHtml(FOLD_ICON[fi.slice(3)], 'hic');
@@ -4284,12 +4290,13 @@ function foldInit(root){
   while(h3.firstChild) btn.appendChild(h3.firstChild);
   h3.appendChild(btn); head.classList.add('fhd');
   if(fi) c.id = 'ca-' + fi.slice(3);
+  if(!c.id) c.id = 'c' + ci;
   const eb = head.querySelector('.eyebrow'); if(eb){ eb.style.display = 'block'; btn.insertBefore(eb, btn.firstChild); btn.insertBefore(document.createTextNode(' '), eb.nextSibling); }
   c.querySelectorAll('th').forEach(th=>{ if(/\d-\D/.test(th.textContent)) th.innerHTML = th.innerHTML.replace(/(\d)-(?=[^\d<\s])/g,'$1\u2011'); });
-  const key = c.id || '';
+  const key = c.id ? pageKey + '|' + c.id : '';
   const set = open=>{ c.classList.toggle('closed', !open); if(open) markWide(c); btn.setAttribute('aria-expanded', open ? 'true' : 'false'); if(key){ if(open) FOLD_OPEN.add(key); else FOLD_OPEN.delete(key); } };
   set(FOLD_OPEN.has(key)); c._open = ()=>set(true);
-  head.addEventListener('click', ()=>set(c.classList.contains('closed')));
+  head.addEventListener('click', ()=>{ const o = c.classList.contains('closed'); set(o); cardUrl(c, o); });
  });
 }
 /* "Jump to" chips: one per card on the page; a chip scrolls to its card and opens it if it is collapsed. */
@@ -4639,14 +4646,14 @@ function render(){
  app.querySelectorAll('.tabs, .jumps').forEach(edgeFade);
  app.querySelectorAll('details[data-bt]').forEach(d=>d.addEventListener('toggle', ()=>{ if(d.open) btFill(d); }));
  app.querySelectorAll('details').forEach(d=>d.addEventListener('toggle', ()=>{ if(d.open) markWide(d); }));
- app.querySelectorAll('[data-day]').forEach(m=>m.addEventListener('click', e=>{ e.preventDefault(); const t=document.getElementById('day-'+m.dataset.day); if(!t) return; if(t._jump) t._jump(); else { try{ t.scrollIntoView({block:'start'}); }catch(x){} } }));
+ app.querySelectorAll('[data-day]').forEach(m=>m.addEventListener('click', e=>{ e.preventDefault(); const t=document.getElementById('day-'+m.dataset.day); if(!t) return; if(t._jump) t._jump(); else { try{ t.scrollIntoView({block:'start'}); }catch(x){} } cardUrl(t, true); }));
  let sy = 0; try{ const st = history.state; if(st && typeof st.y==='number') sy = st.y; }catch(e){}
  if(!sy && r.group){ const g = document.getElementById('evgrp-'+r.group); if(g) sy = g.getBoundingClientRect().top + (window.pageYOffset||0) - 8; }
  window.scrollTo(0, sy);
  app.querySelectorAll('.evback a').forEach(a=>a.addEventListener('click', e=>{ if(PREV_HASH && PREV_HASH===a.getAttribute('href')){ e.preventDefault(); history.back(); } }));
  if(RENDERED){ const h1 = app.querySelector('.hhead h1'); if(h1){ h1.tabIndex = -1; try{ h1.focus({preventScroll:true}); }catch(e){} } }
  RENDERED = true;
- if(r.page==='sec' && r.card && !sy){ const c = document.getElementById(r.card); if(c){ if(c._open) c._open(); try{ c.scrollIntoView({block:'start'}); }catch(e){} } }
+ if((r.page==='sec' || r.page==='event') && r.card && !sy){ const c = document.getElementById(r.card); if(c){ if(c._open) c._open(); try{ c.scrollIntoView({block:'start'}); }catch(e){} } }
  if(r.page==='roadmap' && r.stage && !sy){ const st = document.getElementById('stage-'+r.stage); if(st && st._open) st._open(); if(st && st.scrollIntoView) st.scrollIntoView({block:'start'}); }
  CHK_SEEN = app.querySelector('input[data-check]') ? chkPeriod(0)+chkPeriod(1) : '';
  const cl = document.getElementById('clearchecks'); if(cl){ cl.addEventListener('click',e=>{ e.preventDefault(); try{ localStorage.removeItem('pcfm.checks'); }catch(x){} render(); }); }
