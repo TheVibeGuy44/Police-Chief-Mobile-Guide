@@ -616,6 +616,8 @@ td img.it[src$="is_dd.webp"],td img.it[src$="is_ac.webp"]{width:26px;height:26px
 .evtile .evl{display:block;font-size:13px;line-height:1.35;color:var(--fg2);margin-top:2px}
 
 .brand .v2tag{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:999px;font-size:10px;letter-spacing:.04em;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--acc-t)}
+.sgp button.sgsend{border:0;-webkit-appearance:none;appearance:none}
+.sgp button.sgsend:disabled{opacity:.6;cursor:default}
 </style>
 
 <div class="wrap">
@@ -4354,7 +4356,8 @@ document.addEventListener('click', e=>{ const a = e.target && e.target.closest &
 (function(){ let t; window.addEventListener('scroll', ()=>{ clearTimeout(t); t = setTimeout(()=>{ const q = document.querySelector('.evq'); try{ history.replaceState(Object.assign({}, history.state, {y: window.pageYOffset||0, q: q ? q.value : ''}), ''); }catch(e){} }, 150); }, {passive:true}); })();
 /* ---- suggestion box (Google Form behind it) ---- */
 const SG_FORM = {"form": "1FAIpQLScUlyfmTNT85QX80ExN4qpC3jmfMn9tvCCeGv-yymcLWHQlHA", "tag": "entry.30754360", "text": "entry.1641845112", "sheet": ""};
-const SG = {open:false, tag:'', text:'', msg:'', kind:'', owner:false};
+const SG = {open:false, tag:'', text:'', msg:'', kind:'', owner:false, fb:false, busy:false};
+const SG_DIRECT = (()=>{ try{ return /^https?:$/.test(location.protocol) && !/claude|anthropic/i.test(location.hostname) && typeof fetch==='function'; }catch(e){ return false; } })();
 function sgT(s){ return typeof tx==='function' ? tx(s) : s; }
 function sgEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function sgOn(){ return !!(SG_FORM.form && SG_FORM.tag && SG_FORM.text); }
@@ -4371,13 +4374,13 @@ function sgPanel(){
    <input id="sg-tag" name="tag" type="text" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${sgEsc(sgT('[ABC]PlayerName'))}" required>
    <label for="sg-text">${sgT('Suggestion')}</label>
    <textarea id="sg-text" name="text" maxlength="2000" rows="5" required></textarea>
-   <div class="sgrow"><a class="sgsend" href="${sgEsc(sgLink())}" target="_blank" rel="noopener">${sgT('Send on Google Forms')} <span aria-hidden="true">↗</span></a></div>
+   <div class="sgrow">${SG_DIRECT && !SG.fb ? `<button class="sgsend" type="button">${sgT('Send')}</button>` : `<a class="sgsend" href="${sgEsc(sgLink())}" target="_blank" rel="noopener">${sgT(SG.fb ? 'Finish on Google Forms' : 'Send on Google Forms')} <span aria-hidden="true">↗</span></a>`}</div>
    <p class="sgmsg${SG.kind?' '+SG.kind:''}" role="status" aria-live="polite">${SG.msg ? sgT(SG.msg) : ''}</p>
   </form>
   ${SG.owner && SG_FORM.sheet ? `<p class="sgown"><a href="${sgEsc(SG_FORM.sheet)}" target="_blank" rel="noopener">${sgT('Your suggestions sheet')} ↗</a></p>` : ''}`;
  const tag = p.querySelector('#sg-tag'), text = p.querySelector('#sg-text'), send = p.querySelector('.sgsend');
  tag.value = SG.tag; text.value = SG.text;
- const upd = ()=>{ send.href = sgLink(); };
+ const upd = ()=>{ if(send.tagName==='A') send.href = sgLink(); };
  tag.addEventListener('input', ()=>{ SG.tag = tag.value; tag.removeAttribute('aria-invalid'); upd(); });
  text.addEventListener('input', ()=>{ SG.text = text.value; text.removeAttribute('aria-invalid'); upd(); });
  p.querySelector('.sgx').addEventListener('click', ()=>sgShow(false, true));
@@ -4391,7 +4394,15 @@ function sgSend(e){
  SG.tag = tag.value; SG.text = text.value;
  if(!SG.tag.trim()){ e.preventDefault(); tag.setAttribute('aria-invalid','true'); sgMsg('Add your game tag.', 'err'); tag.focus(); return; }
  if(!SG.text.trim()){ e.preventDefault(); text.setAttribute('aria-invalid','true'); sgMsg('Write your suggestion.', 'err'); text.focus(); return; }
- e.currentTarget.href = sgLink();
+ const btn = e.currentTarget;
+ if(btn.tagName!=='A'){
+  e.preventDefault(); if(SG.busy) return; SG.busy = true; btn.disabled = true; btn.textContent = (typeof T==='function' ? T('Sending…') : 'Sending…'); sgMsg('', '');
+  fetch(sgUrl('formResponse'), {method:'POST', mode:'no-cors', body: sgFill()})
+   .then(()=>{ SG.busy = false; SG.text = ''; SG.msg = 'Thanks! Your suggestion was sent.'; SG.kind = 'ok'; if(SG.open) sgPanel(); })
+   .catch(()=>{ SG.busy = false; SG.fb = true; SG.msg = 'One more step: tap the button below to send it through Google Forms.'; SG.kind = ''; if(SG.open) sgPanel(); });
+  return;
+ }
+ btn.href = sgLink();
  setTimeout(()=>{ SG.tag = ''; SG.text = ''; SG.msg = 'Thanks! Finish sending it in the Google Forms tab.'; SG.kind = 'ok'; if(SG.open) sgPanel(); }, 400);
 }
 function sgShow(on, refocus){
