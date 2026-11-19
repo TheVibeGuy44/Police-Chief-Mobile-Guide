@@ -704,11 +704,13 @@ body:not([data-page="home"]) #app{margin-top:10px}
 /* w09 contributor of the week (home banner) */
 .hb-in{padding-right:16px}
 .hb-row{padding-right:46px}
-.cotw{display:none;position:absolute;right:12px;top:64px;width:128px;box-sizing:border-box;padding:8px 6px;border-radius:12px;background:rgba(16,37,79,.72);flex-direction:column;align-items:center;gap:6px;text-align:center}
+.cotw{display:none;position:absolute;right:12px;top:64px;width:128px;box-sizing:border-box;padding:7px 4px;border-radius:12px;background:rgba(16,37,79,.72);flex-direction:column;align-items:center;gap:6px;text-align:center}
 body[data-page="home"] .cotw:not([hidden]){display:flex}
 .cotw-t{margin:0;font:700 11px/1.15 var(--display);letter-spacing:.12em;color:#ffd08a;text-wrap:balance}
-.cotw-p{width:46px;height:46px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px #f5a742;background:#10254f}
-.cotw-n{font:700 12px/1.15 var(--body);color:#fff;max-width:116px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* in-game pictures come with their own frame, so the picture shows whole; "round": true in contributor.json crops it to a ringed circle instead */
+.cotw-p{width:56px;height:56px;object-fit:contain}
+.cotw-p.round{width:46px;height:46px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px #f5a742;background:#10254f}
+.cotw-n{font:700 12px/1.15 var(--body);color:#fff;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ghd.has-cotw .hb-title{max-width:calc(100% - 134px)}
 @media (min-width:753px){
  .hb-in{padding-right:16px}
@@ -4475,7 +4477,7 @@ document.addEventListener('click', e=>{ const a = e.target && e.target.closest &
 (function(){ let t; window.addEventListener('scroll', ()=>{ clearTimeout(t); t = setTimeout(()=>{ const q = document.querySelector('.evq'); try{ history.replaceState(Object.assign({}, history.state, {y: window.pageYOffset||0, q: q ? q.value : ''}), ''); }catch(e){} }, 150); }, {passive:true}); })();
 /* ---- w08 header: banner text, language menu, search across the guide ---- */
 const HB_L10N = {"tr": {"POLICE CHIEF": "POLİS ŞEFİ", "Field Manual": "Saha El Kitabı", "State 171": "Eyalet 171", "Search heroes, events, gear": "Kahraman, etkinlik, ekipman ara", "Search the guide": "Rehberde ara", "Close search": "Aramayı kapat", "Clear": "Temizle", "No matches. Try a shorter word.": "Sonuç yok. Daha kısa bir kelime dene.", "Loading…": "Yükleniyor…", "Search is not available right now.": "Arama şu anda kullanılamıyor."}, "pt": {"POLICE CHIEF": "CHEFE DE POLÍCIA", "Field Manual": "Manual de campo", "State 171": "Estado 171", "Search heroes, events, gear": "Buscar heróis, eventos, equipamentos", "Search the guide": "Buscar no guia", "Close search": "Fechar busca", "Clear": "Limpar", "No matches. Try a shorter word.": "Nada encontrado. Tente uma palavra mais curta.", "Loading…": "Carregando…", "Search is not available right now.": "A busca não está disponível agora."}, "ko": {"POLICE CHIEF": "폴리스 치프", "Field Manual": "야전 교범", "State 171": "171 서버", "Search heroes, events, gear": "영웅, 이벤트, 장비 검색", "Search the guide": "가이드 검색", "Close search": "검색 닫기", "Clear": "지우기", "No matches. Try a shorter word.": "결과가 없어요. 더 짧은 단어로 찾아보세요.", "Loading…": "불러오는 중…", "Search is not available right now.": "지금은 검색을 사용할 수 없어요."}};
-const GS_V = '202611191704';
+const GS_V = '202611191708';
 function hbL(s){ try{ const m = HB_L10N[typeof LANG==='string' ? LANG : 'en']; if(m && m[s]) return m[s]; }catch(e){} return s; }
 function hbEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function hbScroll(){ const hb = document.getElementById('hb'), b = document.getElementById('sgb'); if(hb && b) b.classList.toggle('onart', (window.pageYOffset||0) < hb.offsetHeight - 34); }
@@ -4501,9 +4503,10 @@ function cotwSync(){
  const d = COTW.d, on = !!(d && typeof d.name==='string' && d.name.trim() && typeof d.img==='string' && d.img.trim());
  el.hidden = !on; hb.classList.toggle('has-cotw', on); if(!on) return;
  const t = hbL('CONTRIBUTOR OF THE WEEK'); let im = el.querySelector('.cotw-p');
- if(!im){ im = document.createElement('img'); im.className = 'cotw-p'; im.alt = ''; im.width = 46; im.height = 46; el.insertBefore(im, el.querySelector('.cotw-n')); }  /* made here so a page with no contributor has no empty picture */
+ if(!im){ im = document.createElement('img'); im.className = 'cotw-p'; im.alt = ''; el.insertBefore(im, el.querySelector('.cotw-n')); }  /* made here so a page with no contributor has no empty picture */
  el.querySelector('.cotw-t').textContent = t; el.querySelector('.cotw-n').textContent = d.name.trim(); el.setAttribute('aria-label', t + ': ' + d.name.trim());
  if(im.getAttribute('src') !== d.img.trim()) im.setAttribute('src', d.img.trim());
+ im.classList.toggle('round', d.round===true);
 }
 function cotwLoad(){ if(COTW.tried || typeof fetch!=='function') return; COTW.tried = true; try{ fetch('contributor.json?v=' + Math.floor(Date.now()/600000)).then(r=>r.ok ? r.json() : null).then(d=>{ COTW.d = d; cotwSync(); }).catch(()=>{}); }catch(e){} }
 const GS = {idx:{}, p:null, pl:'', t:0};
