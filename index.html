@@ -4360,7 +4360,7 @@ const SG = {open:false, tag:'', text:'', msg:'', kind:'', owner:false, busy:fals
 const SG_HOOK = ["==gRZ5WcnF3d6FWNnREbxpmUQJlYilFSlhWSRh3VK", "JVRipUMxpkNlVGe2FEa0d1XVxWZVhDdzgETnxUYtp", "2NURmUPxWaZ9iM4YzM0YzMzADOxATO3AzM3UTMvM3", "av9GaiV2dvkGch9SbvNmLkJ3bjNXak9yL6MHc0RHa"];
 function sgHook(){ try{ return atob(SG_HOOK.join('').split('').reverse().join('')); }catch(e){ return ''; } }
 const SG_DIRECT = (()=>{ try{ return /^https?:$/.test(location.protocol) && !/claude|anthropic/i.test(location.hostname) && typeof fetch==='function' && typeof FormData==='function' && !!sgHook(); }catch(e){ return false; } })();
-const SG_L10N = {"tr": {"Could not send. Check your connection and try again.": "Gönderilemedi. Bağlantını kontrol edip tekrar dene."}, "pt": {"Could not send. Check your connection and try again.": "Não foi possível enviar. Verifique sua conexão e tente de novo."}, "ko": {"Could not send. Check your connection and try again.": "보내지 못했습니다. 연결을 확인한 뒤 다시 시도하세요.", "Sending…": "보내는 중…", "Thanks! Your suggestion was sent.": "감사합니다! 제안이 전송되었습니다."}};
+const SG_L10N = {"tr": {"Found a mistake, or have an idea for this guide? Add your game tag if you’re OK with me reaching out.": "Bu rehberde bir hata mı buldun, yoksa bir fikrin mi var? Sana ulaşmamda sakınca yoksa oyun etiketini de ekle.", "Could not send. Check your connection and try again.": "Gönderilemedi. Bağlantını kontrol edip tekrar dene."}, "pt": {"Found a mistake, or have an idea for this guide? Add your game tag if you’re OK with me reaching out.": "Achou um erro ou tem uma ideia para este guia? Inclua sua tag do jogo se eu puder entrar em contato com você.", "Could not send. Check your connection and try again.": "Não foi possível enviar. Verifique sua conexão e tente de novo."}, "ko": {"Found a mistake, or have an idea for this guide? Add your game tag if you’re OK with me reaching out.": "오류를 발견했거나 이 가이드에 대한 아이디어가 있나요? 제가 연락드려도 괜찮다면 게임 태그도 함께 적어 주세요.", "Could not send. Check your connection and try again.": "보내지 못했습니다. 연결을 확인한 뒤 다시 시도하세요.", "Sending…": "보내는 중…", "Thanks! Your suggestion was sent.": "감사합니다! 제안이 전송되었습니다."}};
 function sgL(s, plain){ try{ const m = SG_L10N[typeof LANG==='string' ? LANG : 'en']; if(m && m[s]) return m[s]; }catch(e){} return plain ? (typeof T==='function' ? T(s) : s) : sgT(s); }
 function sgT(s){ return typeof tx==='function' ? tx(s) : s; }
 function sgEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -4372,10 +4372,10 @@ function sgPanel(){
  const p = document.getElementById('sgp'); if(!p) return;
  p.innerHTML = `<button class="sgx" type="button" aria-label="${sgEsc(sgT('Close'))}">×</button>
   <h2 id="sg-t">${sgT('Send a suggestion')}</h2>
-  <p>${sgT('Found a mistake, or have an idea for this guide? Leave your game tag and your suggestion.')}</p>
+  <p>${SG_DIRECT ? sgL("Found a mistake, or have an idea for this guide? Add your game tag if you’re OK with me reaching out.") : sgT('Found a mistake, or have an idea for this guide? Leave your game tag and your suggestion.')}</p>
   <form novalidate>
-   <label for="sg-tag">${sgT('Game Tag')}</label>
-   <input id="sg-tag" name="tag" type="text" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${sgEsc(sgT('[ABC]PlayerName'))}" required>
+   ${SG_DIRECT ? `<input id="sg-tag" type="hidden">` : `<label for="sg-tag">${sgT('Game Tag')}</label>
+   <input id="sg-tag" name="tag" type="text" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${sgEsc(sgT('[ABC]PlayerName'))}" required>`}
    <label for="sg-text">${sgT('Suggestion')}</label>
    <textarea id="sg-text" name="text" maxlength="2000" rows="5" required></textarea>
    <div class="sgrow">${SG_DIRECT ? `<button class="sgsend" type="button">${sgT('Send')}</button>` : `<a class="sgsend" href="${sgEsc(sgLink())}" target="_blank" rel="noopener">${sgT('Send on Google Forms')} <span aria-hidden="true">↗</span></a>`}</div>
@@ -4396,13 +4396,13 @@ function sgMsg(m, kind){ SG.msg = m; SG.kind = kind || ''; const el = document.q
 function sgSend(e){
  const p = document.getElementById('sgp'); const tag = p.querySelector('#sg-tag'), text = p.querySelector('#sg-text');
  SG.tag = tag.value; SG.text = text.value;
- if(!SG.tag.trim()){ e.preventDefault(); tag.setAttribute('aria-invalid','true'); sgMsg('Add your game tag.', 'err'); tag.focus(); return; }
+ if(!SG_DIRECT && !SG.tag.trim()){ e.preventDefault(); tag.setAttribute('aria-invalid','true'); sgMsg('Add your game tag.', 'err'); tag.focus(); return; }
  if(!SG.text.trim()){ e.preventDefault(); text.setAttribute('aria-invalid','true'); sgMsg('Write your suggestion.', 'err'); text.focus(); return; }
  const btn = e.currentTarget;
  if(btn.tagName!=='A'){
   e.preventDefault(); if(SG.busy) return; SG.busy = true; btn.disabled = true; btn.textContent = sgL('Sending…', true); sgMsg('', '');
   const fd = new FormData();
-  fd.append('payload_json', JSON.stringify({username:'Guide Suggestions', allowed_mentions:{parse:[]}, embeds:[{author:{name:SG.tag.trim().slice(0,200)}, description:SG.text.trim().slice(0,3900), color:0x2f6fed, footer:{text:'Page: ' + ((location.hash||'').replace(/^#/,'') || 'home') + ' · ' + (typeof LANG==='string' ? LANG.toUpperCase() : 'EN')}}]}));
+  fd.append('payload_json', JSON.stringify({username:'Guide Suggestions', allowed_mentions:{parse:[]}, embeds:[{description:SG.text.trim().slice(0,3900), color:0x2f6fed, footer:{text:'Page: ' + ((location.hash||'').replace(/^#/,'') || 'home') + ' · ' + (typeof LANG==='string' ? LANG.toUpperCase() : 'EN')}}]}));
   fetch(sgHook() + '?wait=true', {method:'POST', body: fd})
    .then(r=>{ if(!r.ok) throw new Error('send'); SG.busy = false; SG.text = ''; SG.msg = 'Thanks! Your suggestion was sent.'; SG.kind = 'ok'; if(SG.open) sgPanel(); })
    .catch(()=>{ SG.busy = false; SG.msg = 'Could not send. Check your connection and try again.'; SG.kind = 'err'; if(SG.open) sgPanel(); });
@@ -4414,7 +4414,7 @@ function sgSend(e){
 function sgShow(on, refocus){
  const b = document.getElementById('sgb'), p = document.getElementById('sgp'); if(!b || !p) return;
  SG.open = on; b.setAttribute('aria-expanded', on ? 'true' : 'false'); if(on){ SG.used = true; sgNudge(false); }
- if(on){ if(SG.kind==='ok'){ SG.msg=''; SG.kind=''; } sgPanel(); p.hidden = false; const f = p.querySelector(SG.tag.trim() ? '#sg-text' : '#sg-tag'); if(f){ try{ f.focus({preventScroll:true}); }catch(x){} } }
+ if(on){ if(SG.kind==='ok'){ SG.msg=''; SG.kind=''; } sgPanel(); p.hidden = false; const f = p.querySelector(SG_DIRECT || SG.tag.trim() ? '#sg-text' : '#sg-tag'); if(f){ try{ f.focus({preventScroll:true}); }catch(x){} } }
  else { p.hidden = true; if(refocus){ try{ b.focus(); }catch(x){} } }
 }
 function sgSync(){
