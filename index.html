@@ -716,6 +716,44 @@ body[data-page="home"] .cotw:not([hidden]){display:flex}
  .hb-in{padding-right:16px}
  .hb-row{padding-right:max(0px,calc(46px - (100vw - 720px) / 2))}
 }
+/* w10 contributor link in the banner, and the Contributors page */
+.cotw{top:58px;padding:6px 4px;gap:4px;text-decoration:none;box-shadow:inset 0 0 0 1.5px #f5a742}
+.cotw:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.cotw-t{display:block}
+.cotw-p{width:50px;height:50px}
+.cotw-all{font:700 11px/1.2 var(--body);color:#ffd08a;text-decoration:underline;text-underline-offset:2px}
+.ctb{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.ctb .lead{margin:0}
+.ctb-stage{position:relative;overflow:hidden;border-radius:16px;background:#10254f;color:#fff}
+.ctb-stage > img{position:absolute;inset:0;width:100%;height:100%;max-width:none;object-fit:cover;object-position:60% 40%}
+.ctb-stage::before{content:'';position:absolute;inset:0;z-index:1;background:#10254f;opacity:.8}
+.ctb-pod{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end;padding:16px 10px 0;max-width:460px;margin:0 auto}
+.ctb-col{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:center}
+button.ctb-col{cursor:pointer}
+button.ctb-col:focus-visible{outline:2px solid #fff;outline-offset:2px;border-radius:10px}
+.ctb-pic{width:60px;height:60px;object-fit:contain}
+.ctb-p1 .ctb-pic{width:84px;height:84px}
+.ctb-ini,.ctb-plus{display:flex;align-items:center;justify-content:center;width:60px;height:60px;box-sizing:border-box;border-radius:10px;font:700 26px/1 var(--display)}
+.ctb-ini{background:rgba(255,255,255,.14);color:#fff}
+.ctb-plus{border:1.5px dashed #9db3df;color:#c5d2ea}
+.ctb-p1 .ctb-ini,.ctb-p1 .ctb-plus{width:84px;height:84px;font-size:34px}
+.ctb-n{max-width:100%;font:700 12px/1.15 var(--body);overflow-wrap:anywhere}
+.ctb-p1 .ctb-n{font-size:13px}
+.ctb-s{font:600 11px/1.15 var(--body);color:#c5d2ea}
+.ctb-f{font:700 12px/1.15 var(--body);color:#dfe6f2}
+.ctb-p1 .ctb-f{color:#ffd08a}.ctb-p3 .ctb-f{color:#f0c9a8}
+.ctb-step{display:flex;align-items:center;justify-content:center;width:100%;border-radius:10px 10px 0 0;font:700 34px/1 var(--display);color:#10254f;height:72px;background:#c5cede}
+.ctb-p1 .ctb-step{height:108px;font-size:48px;background:#f5a742}
+.ctb-p3 .ctb-step{height:50px;font-size:28px;background:#d39a6a}
+.ctb-list{list-style:none;margin:0;padding:0;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-m)}
+.ctb-list li{display:flex;align-items:center;gap:12px;min-height:48px;padding:4px 14px;border-bottom:1px solid var(--line)}
+.ctb-list li:last-child{border-bottom:0}
+.ctb-list .rk{flex:none;min-width:22px;font:700 20px/1 var(--display);color:var(--acc-t)}
+.ctb-list .nm{flex:1;min-width:0;font:600 14px/1.3 var(--body);overflow-wrap:anywhere}
+.ctb-list .fx{flex:none;font:700 13px/1 var(--body);color:var(--fg2)}
+.ctb-cta{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:100%;min-height:60px;box-sizing:border-box;padding:8px 12px;border:1.5px dashed color-mix(in srgb,var(--accent) 55%,transparent);border-radius:12px;background:none;color:var(--acc-t);font:700 15px/1.25 var(--body);text-align:center;cursor:pointer}
+.ctb-cta span{font:600 12px/1.25 var(--body);color:var(--fg2)}
+.ctb-cta:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 </style>
 
 <div class="wrap">
@@ -730,7 +768,7 @@ body[data-page="home"] .cotw:not([hidden]){display:flex}
         </div>
       </div>
       <div class="hb-title" aria-hidden="true"><span class="hb-k"></span><span class="hb-h"></span><span class="hb-tag"></span></div>
-      <section class="cotw" id="cotw" hidden><h2 class="cotw-t"></h2><span class="cotw-n"></span></section>
+      <a class="cotw" id="cotw" href="#contributors" hidden><span class="cotw-t"></span><span class="cotw-n"></span><span class="cotw-all"></span></a>
     </div>
   </header>
   <div class="hsq" id="hsq"><svg class="hbi" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><input id="gq" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"><button type="button" class="gqx" id="gqx" hidden><span aria-hidden="true">×</span></button></div>
@@ -4184,6 +4222,7 @@ function parse(){
  if(t==='tested') return {page:'tested'};
  if(t==='sources') return {page:'sources'};
  if(t==='glossary') return {page:'glossary'};
+ if(t==='contributors') return {page:'contributors'};
  const rm = t.match(/^roadmap(?:-([1-5]))?$/); if(rm) return {page:'roadmap',stage:rm[1]||''};
  const m = t.match(/^heroes-pages-([a-z]+?)(?:-([jc]\d+|day-\d+|ca-[a-z]+))?$/); if(m) return {page:'sec',sec:'heroes',tab:'pages',hero:m[1],card:m[2]||''};
  const em = t.match(/^events-e_([a-z0-9]+)(?:-(.+))?$/); if(em && EVENT_BY[em[1]]) return {page:'event', ev:EVENT_BY[em[1]], slug:em[1], card:CARD_RE.test(em[2]||'') ? em[2] : ''};
@@ -4477,7 +4516,7 @@ document.addEventListener('click', e=>{ const a = e.target && e.target.closest &
 (function(){ let t; window.addEventListener('scroll', ()=>{ clearTimeout(t); t = setTimeout(()=>{ const q = document.querySelector('.evq'); try{ history.replaceState(Object.assign({}, history.state, {y: window.pageYOffset||0, q: q ? q.value : ''}), ''); }catch(e){} }, 150); }, {passive:true}); })();
 /* ---- w08 header: banner text, language menu, search across the guide ---- */
 const HB_L10N = {"tr": {"POLICE CHIEF": "POLİS ŞEFİ", "Field Manual": "Saha El Kitabı", "State 171": "Eyalet 171", "Search heroes, events, gear": "Kahraman, etkinlik, ekipman ara", "Search the guide": "Rehberde ara", "Close search": "Aramayı kapat", "Clear": "Temizle", "No matches. Try a shorter word.": "Sonuç yok. Daha kısa bir kelime dene.", "Loading…": "Yükleniyor…", "Search is not available right now.": "Arama şu anda kullanılamıyor."}, "pt": {"POLICE CHIEF": "CHEFE DE POLÍCIA", "Field Manual": "Manual de campo", "State 171": "Estado 171", "Search heroes, events, gear": "Buscar heróis, eventos, equipamentos", "Search the guide": "Buscar no guia", "Close search": "Fechar busca", "Clear": "Limpar", "No matches. Try a shorter word.": "Nada encontrado. Tente uma palavra mais curta.", "Loading…": "Carregando…", "Search is not available right now.": "A busca não está disponível agora."}, "ko": {"POLICE CHIEF": "폴리스 치프", "Field Manual": "야전 교범", "State 171": "171 서버", "Search heroes, events, gear": "영웅, 이벤트, 장비 검색", "Search the guide": "가이드 검색", "Close search": "검색 닫기", "Clear": "지우기", "No matches. Try a shorter word.": "결과가 없어요. 더 짧은 단어로 찾아보세요.", "Loading…": "불러오는 중…", "Search is not available right now.": "지금은 검색을 사용할 수 없어요."}};
-const GS_V = '202611191708';
+const GS_V = '202611191746';
 function hbL(s){ try{ const m = HB_L10N[typeof LANG==='string' ? LANG : 'en']; if(m && m[s]) return m[s]; }catch(e){} return s; }
 function hbEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function hbScroll(){ const hb = document.getElementById('hb'), b = document.getElementById('sgb'); if(hb && b) b.classList.toggle('onart', (window.pageYOffset||0) < hb.offsetHeight - 34); }
@@ -4504,7 +4543,7 @@ function cotwSync(){
  el.hidden = !on; hb.classList.toggle('has-cotw', on); if(!on) return;
  const t = hbL('CONTRIBUTOR OF THE WEEK'); let im = el.querySelector('.cotw-p');
  if(!im){ im = document.createElement('img'); im.className = 'cotw-p'; im.alt = ''; el.insertBefore(im, el.querySelector('.cotw-n')); }  /* made here so a page with no contributor has no empty picture */
- el.querySelector('.cotw-t').textContent = t; el.querySelector('.cotw-n').textContent = d.name.trim(); el.setAttribute('aria-label', t + ': ' + d.name.trim());
+ const all = hbL('All contributors ›'); el.querySelector('.cotw-t').textContent = t; el.querySelector('.cotw-n').textContent = d.name.trim(); el.querySelector('.cotw-all').textContent = all; el.setAttribute('aria-label', t + ': ' + d.name.trim() + '. ' + all);
  if(im.getAttribute('src') !== d.img.trim()) im.setAttribute('src', d.img.trim());
  im.classList.toggle('round', d.round===true);
 }
@@ -4579,6 +4618,38 @@ function gsRun(){
  if(out) out.addEventListener('click', e=>{ const a = e.target && e.target.closest && e.target.closest('a.gsr'); if(!a) return; if(a.getAttribute('href')===location.hash){ e.preventDefault(); gsReset(); render(); } });
  window.addEventListener('scroll', hbScroll, {passive:true});
 })();
+/* ---- w10 Contributors page ---- */
+try{ const x = {"tr": {"Contributors": "Katkı Sağlayanlar", "Ranked by fixes that made it into the guide.": "Rehbere giren düzeltme sayısına göre sıralanır.", "Your name here. Send one fix ›": "Senin adın burada olsun. Bir düzeltme gönder ›", "One fix puts you on the board.": "Tek bir düzeltme seni listeye sokar.", "All contributors ›": "Tüm katkı sağlayanlar ›", "Open spot": "Boş yer"}, "pt": {"Contributors": "Colaboradores", "Ranked by fixes that made it into the guide.": "Classificados pelas correções que entraram no guia.", "Your name here. Send one fix ›": "Seu nome aqui. Envie uma correção ›", "One fix puts you on the board.": "Uma correção já coloca você no quadro.", "All contributors ›": "Todos os colaboradores ›", "Open spot": "Vaga aberta"}, "ko": {"Contributors": "기여자", "Ranked by fixes that made it into the guide.": "가이드에 반영된 수정 횟수 순이에요.", "Your name here. Send one fix ›": "여기에 내 이름을. 수정 하나 보내기 ›", "One fix puts you on the board.": "수정 하나면 순위표에 올라요.", "All contributors ›": "기여자 전체 보기 ›", "Open spot": "빈 자리"}}; Object.keys(x).forEach(k=>Object.assign(HB_L10N[k] || (HB_L10N[k] = {}), x[k])); }catch(e){}
+const CT = {d:null, tried:false};
+function ctLang(){ return typeof LANG==='string' ? LANG : 'en'; }
+function ctFix(n){ n = Math.max(0, Math.round(+n || 0)); const l = ctLang(); if(l==='tr') return n + ' düzeltme'; if(l==='pt') return n===1 ? '1 correção' : n + ' correções'; if(l==='ko') return '수정 ' + n + '회'; return n===1 ? '1 fix' : n + ' fixes'; }
+function ctState(s){ s = String(s==null ? '' : s).trim(); if(!s) return ''; const l = ctLang(); return l==='tr' ? 'Eyalet ' + s : l==='pt' ? 'Estado ' + s : l==='ko' ? s + ' 서버' : 'State ' + s; }
+function ctLoad(){
+ if(CT.tried) return; CT.tried = true;
+ const done = d=>{ CT.d = (Array.isArray(d) ? d : []).filter(x=>x && typeof x.name==='string' && x.name.trim()).map((x,i)=>({name:x.name.trim(), state:x.state, fixes:Math.max(0, Math.round(+x.fixes || 0)), img:typeof x.img==='string' ? x.img.trim() : '', i:i})).sort((a,b)=>b.fixes - a.fixes || a.i - b.i);
+  try{ if(parse().page==='contributors') render(); }catch(e){} };
+ try{ fetch('contributors.json?v=' + Math.floor(Date.now()/600000)).then(r=>r.ok ? r.json() : []).then(done).catch(()=>done([])); }catch(e){ done([]); }
+}
+function contributorsPage(){
+ if(!CT.d) ctLoad();
+ const d = CT.d || [], ready = !!CT.d;
+ const col = (k, c)=>{
+  const cls = 'ctb-col ctb-p' + k;
+  if(!c) return `<button type="button" class="${cls}" data-sg><span class="ctb-plus" aria-hidden="true">+</span><span class="ctb-n">${hbEsc(hbL('Open spot'))}</span><div class="ctb-step">${k}</div></button>`;
+  const ini = (c.name.replace(/^\[[^\]]*\]\s*/, '').match(/[\p{L}\p{N}]/u) || ['?'])[0].toUpperCase();
+  return `<div class="${cls}">${c.img ? `<img class="ctb-pic" src="${hbEsc(c.img)}" alt="">` : `<span class="ctb-ini" aria-hidden="true">${hbEsc(ini)}</span>`}<span class="ctb-n">${hbEsc(c.name)}</span>${ctState(c.state) ? `<span class="ctb-s">${hbEsc(ctState(c.state))}</span>` : ''}<span class="ctb-f">${hbEsc(ctFix(c.fixes))}</span><div class="ctb-step">${k}</div></div>`;
+ };
+ const rest = d.slice(3);
+ return `<div class="hhead"><h1>${hbEsc(hbL('Contributors'))}</h1></div><p class="small evback"><a href="#home">‹ ${tx('Home')}</a></p>
+ <div class="ctb">
+  <p class="lead">${hbEsc(hbL('Ranked by fixes that made it into the guide.'))}</p>
+  <section class="ctb-stage" aria-label="${hbEsc(hbL('Contributors'))}"><img src="img/w/home_troops.webp" alt="">${ready ? `<div class="ctb-pod">${col(2, d[1])}${col(1, d[0])}${col(3, d[2])}</div>` : `<div class="ctb-pod" style="min-height:190px"></div>`}</section>
+  ${rest.length ? `<ol class="ctb-list" start="4">${rest.map((c,i)=>`<li><span class="rk">${i + 4}</span><span class="nm">${hbEsc(c.name)}${ctState(c.state) ? ' (' + hbEsc(ctState(c.state)) + ')' : ''}</span><span class="fx">${hbEsc(ctFix(c.fixes))}</span></li>`).join('')}</ol>` : ''}
+  <button type="button" class="ctb-cta" data-sg>${hbEsc(hbL('Your name here. Send one fix ›'))}<span>${hbEsc(hbL('One fix puts you on the board.'))}</span></button>
+ </div>`;
+}
+/* anything marked data-sg opens the suggestion box */
+if(typeof document!=='undefined' && document.addEventListener) document.addEventListener('click', e=>{ const b = e.target && e.target.closest && e.target.closest('[data-sg]'); if(!b) return; e.preventDefault(); e.stopPropagation(); try{ sgShow(true, false); }catch(x){} });
 /* ---- suggestion box (Discord channel on the website; Google Form link inside a Claude artifact) ---- */
 const SG_FORM = {"form": "1FAIpQLScUlyfmTNT85QX80ExN4qpC3jmfMn9tvCCeGv-yymcLWHQlHA", "tag": "entry.30754360", "text": "entry.1641845112", "sheet": ""};
 const SG = {open:false, tag:'', text:'', msg:'', kind:'', owner:false, busy:false};
@@ -4842,6 +4913,7 @@ function render(){
  else if(r.page==='tested'){ html = testedPage(); crumbs='<a href="#home">Home</a> › How we tested'; }
  else if(r.page==='sources' && PAGE2['sources']){ html = `<div class="hhead"><h1>${STAND_TITLE['sources']}</h1></div><p class="small evback"><a href="#home">‹ Home</a></p><div class="stack evpage" style="margin-top:14px">${PAGE2['sources']()}</div>`; crumbs = '<a href="#home">Home</a> › ' + tx(STAND_TITLE['sources']); } else if(r.page==='sources'){ html = sourcesPage(); crumbs='<a href="#home">Home</a> › Sources'; }
  else if(r.page==='glossary' && PAGE2['glossary']){ html = `<div class="hhead"><h1>${STAND_TITLE['glossary']}</h1></div><p class="small evback"><a href="#home">‹ Home</a></p><div class="stack evpage" style="margin-top:14px">${PAGE2['glossary']()}</div>`; crumbs = '<a href="#home">Home</a> › ' + tx(STAND_TITLE['glossary']); } else if(r.page==='glossary'){ html = glossaryPage(); crumbs='<a href="#home">Home</a> › Glossary'; }
+ else if(r.page==='contributors'){ html = contributorsPage(); crumbs = '<a href="#home">' + tx('Home') + '</a> <span class="cur">› ' + hbEsc(hbL('Contributors')) + '</span>'; }
  else if(r.page==='roadmap'){ html = roadmapPage(); crumbs='<a href="#home">Home</a> › Roadmap'; }
  else if(r.page==='event'){ html = eventPage(r.ev); crumbs='<a href="#home">Home</a> › <a href="#events-all">Events</a> <span class="cur">› ' + tx(r.ev.name) + '</span>'; }
  else {
