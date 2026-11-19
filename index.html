@@ -618,6 +618,13 @@ td img.it[src$="is_dd.webp"],td img.it[src$="is_ac.webp"]{width:26px;height:26px
 .brand .v2tag{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:999px;font-size:10px;letter-spacing:.04em;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--acc-t)}
 .sgp button.sgsend{border:0;-webkit-appearance:none;appearance:none}
 .sgp button.sgsend:disabled{opacity:.6;cursor:default}
+.sgp .sgadd{margin-top:8px;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:var(--r-s);border:1px dashed var(--line2);background:transparent;color:var(--acc-t);font:700 13px/1 var(--body);cursor:pointer}
+.sgp .sgadd:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sgp .sgfiles{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:4px}
+.sgp .sgfiles li{display:flex;align-items:center;gap:8px;font-size:13px;background:var(--grey-bg);border-radius:8px;padding:2px 2px 2px 10px}
+.sgp .sgfiles .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sgp .sgfiles .fs{flex:none;color:var(--fg2)}
+.sgp .sgrm{flex:none;width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:var(--fg2);font:400 18px/1 var(--body);cursor:pointer}
 </style>
 
 <div class="wrap">
@@ -4371,6 +4378,29 @@ const SG_L10N = {"tr": {"Found a mistake, or have an idea for this guide? Add yo
 function sgL(s, plain){ try{ const m = SG_L10N[typeof LANG==='string' ? LANG : 'en']; if(m && m[s]) return m[s]; }catch(e){} return plain ? (typeof T==='function' ? T(s) : s) : sgT(s); }
 function sgT(s){ return typeof tx==='function' ? tx(s) : s; }
 function sgEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+const SG_MAXN = 4, SG_MAXB = 8*1024*1024;
+try{ const x = {"tr": {"Add a screenshot or file": "Ekran görüntüsü veya dosya ekle", "Up to 4 files, 8 MB in total.": "En fazla 4 dosya, toplam 8 MB.", "Remove": "Kaldır"}, "pt": {"Add a screenshot or file": "Adicionar captura de tela ou arquivo", "Up to 4 files, 8 MB in total.": "Até 4 arquivos, 8 MB no total.", "Remove": "Remover"}, "ko": {"Add a screenshot or file": "스크린샷 또는 파일 추가", "Up to 4 files, 8 MB in total.": "최대 4개, 합계 8MB까지 첨부할 수 있습니다.", "Remove": "삭제"}}; Object.keys(x).forEach(k=>Object.assign(SG_L10N[k] || (SG_L10N[k] = {}), x[k])); }catch(e){}
+function sgFiles(){ return SG.files || (SG.files = []); }
+function sgSize(n){ return n >= 1048576 ? (n/1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n/1024)) + ' KB'; }
+/* big photos are scaled down before sending; anything else goes as it is */
+function sgShrink(f){ return new Promise(res=>{ try{
+  if(!/^image\/(png|jpe?g|webp)$/i.test(f.type) || f.size < 1500000 || typeof createImageBitmap!=='function') return res(f);
+  createImageBitmap(f).then(bm=>{ const m = Math.min(1, 2000/Math.max(bm.width, bm.height)), c = document.createElement('canvas'); c.width = Math.round(bm.width*m); c.height = Math.round(bm.height*m);
+   const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(bm, 0, 0, c.width, c.height);
+   c.toBlob(b=>{ try{ res(b && b.size < f.size ? new File([b], f.name.replace(/\.[^.]+$/, '') + '.jpg', {type:'image/jpeg'}) : f); }catch(e){ res(f); } }, 'image/jpeg', 0.85); }).catch(()=>res(f));
+ }catch(e){ res(f); } }); }
+function sgFileList(){
+ const ul = document.querySelector('#sgp .sgfiles'); if(!ul) return;
+ ul.innerHTML = sgFiles().map((f,i)=>`<li><span class="fn">${sgEsc(f.name)}</span><span class="fs">${sgSize(f.size)}</span><button type="button" class="sgrm" data-i="${i}" aria-label="${sgEsc(sgL('Remove', true))}">×</button></li>`).join('');
+ ul.hidden = !sgFiles().length;
+ ul.querySelectorAll('.sgrm').forEach(b=>b.addEventListener('click', ()=>{ sgFiles().splice(+b.dataset.i, 1); sgFileList(); sgMsg('', ''); }));
+}
+function sgAddFiles(list){
+ const add = Array.prototype.slice.call(list || []).filter(f=>/^(image|video)\//i.test(f.type) || /^(application\/pdf|text\/plain)$/i.test(f.type)); if(!add.length) return;
+ Promise.all(add.map(sgShrink)).then(fs=>{ let over = false;
+  fs.forEach(f=>{ const cur = sgFiles(), tot = cur.reduce((a,x)=>a + x.size, 0); if(cur.length >= SG_MAXN || tot + f.size > SG_MAXB){ over = true; return; } cur.push(f); });
+  sgFileList(); const t = document.querySelector('#sgp #sg-text'); if(t) t.removeAttribute('aria-invalid'); sgMsg(over ? 'Up to 4 files, 8 MB in total.' : '', over ? 'err' : ''); });
+}
 function sgOn(){ return SG_DIRECT || !!(SG_FORM.form && SG_FORM.tag && SG_FORM.text); }
 function sgUrl(kind){ return 'https://docs.google.com/forms/d/e/' + SG_FORM.form + '/' + kind; }
 function sgFill(){ const p = new URLSearchParams(); p.set(SG_FORM.tag, SG.tag.trim()); p.set(SG_FORM.text, SG.text.trim()); return p; }
@@ -4385,11 +4415,13 @@ function sgPanel(){
    <input id="sg-tag" name="tag" type="text" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${sgEsc(sgT('[ABC]PlayerName'))}" required>`}
    <label for="sg-text">${sgT('Suggestion')}</label>
    <textarea id="sg-text" name="text" maxlength="2000" rows="5" required></textarea>
+   ${SG_DIRECT ? `<ul class="sgfiles" hidden></ul><button type="button" class="sgadd"><span aria-hidden="true">+</span> ${sgL('Add a screenshot or file')}</button><input type="file" class="sgfile" multiple accept="image/*,video/*,application/pdf,text/plain" hidden>` : ''}
    <div class="sgrow">${SG_DIRECT ? `<button class="sgsend" type="button">${sgT('Send')}</button>` : `<a class="sgsend" href="${sgEsc(sgLink())}" target="_blank" rel="noopener">${sgT('Send on Google Forms')} <span aria-hidden="true">↗</span></a>`}</div>
    <p class="sgmsg${SG.kind?' '+SG.kind:''}" role="status" aria-live="polite">${SG.msg ? sgL(SG.msg) : ''}</p>
   </form>
   ${SG.owner && SG_FORM.sheet ? `<p class="sgown"><a href="${sgEsc(SG_FORM.sheet)}" target="_blank" rel="noopener">${sgT('Your suggestions sheet')} ↗</a></p>` : ''}`;
  const tag = p.querySelector('#sg-tag'), text = p.querySelector('#sg-text'), send = p.querySelector('.sgsend');
+ { const ab = p.querySelector('.sgadd'), fi = p.querySelector('.sgfile'); if(ab && fi){ ab.addEventListener('click', ()=>fi.click()); fi.addEventListener('change', ()=>{ sgAddFiles(fi.files); fi.value = ''; }); sgFileList(); } }
  tag.value = SG.tag; text.value = SG.text;
  const upd = ()=>{ if(send.tagName==='A') send.href = sgLink(); };
  tag.addEventListener('input', ()=>{ SG.tag = tag.value; tag.removeAttribute('aria-invalid'); upd(); });
@@ -4404,14 +4436,15 @@ function sgSend(e){
  const p = document.getElementById('sgp'); const tag = p.querySelector('#sg-tag'), text = p.querySelector('#sg-text');
  SG.tag = tag.value; SG.text = text.value;
  if(!SG_DIRECT && !SG.tag.trim()){ e.preventDefault(); tag.setAttribute('aria-invalid','true'); sgMsg('Add your game tag.', 'err'); tag.focus(); return; }
- if(!SG.text.trim()){ e.preventDefault(); text.setAttribute('aria-invalid','true'); sgMsg('Write your suggestion.', 'err'); text.focus(); return; }
+ if(!SG.text.trim() && !(SG_DIRECT && sgFiles().length)){ e.preventDefault(); text.setAttribute('aria-invalid','true'); sgMsg('Write your suggestion.', 'err'); text.focus(); return; }
  const btn = e.currentTarget;
  if(btn.tagName!=='A'){
   e.preventDefault(); if(SG.busy) return; SG.busy = true; btn.disabled = true; btn.textContent = sgL('Sending…', true); sgMsg('', '');
   const fd = new FormData();
-  fd.append('payload_json', JSON.stringify({username:'Guide Suggestions', allowed_mentions:{parse:[]}, embeds:[{description:SG.text.trim().slice(0,3900), color:0x2f6fed, footer:{text:'Page: ' + ((location.hash||'').replace(/^#/,'') || 'home') + ' · ' + (typeof LANG==='string' ? LANG.toUpperCase() : 'EN')}}]}));
+  fd.append('payload_json', JSON.stringify({username:'Guide Suggestions', allowed_mentions:{parse:[]}, embeds:[{description:(SG.text.trim() || '(no text)').slice(0,3900), color:0x2f6fed, footer:{text:'Page: ' + ((location.hash||'').replace(/^#/,'') || 'home') + ' · ' + (typeof LANG==='string' ? LANG.toUpperCase() : 'EN')}}]}));
+  sgFiles().forEach((f,i)=>fd.append('files[' + i + ']', f, f.name));
   fetch(sgHook() + '?wait=true', {method:'POST', body: fd})
-   .then(r=>{ if(!r.ok) throw new Error('send'); SG.busy = false; SG.text = ''; SG.msg = 'Thanks! Your suggestion was sent.'; SG.kind = 'ok'; if(SG.open) sgPanel(); })
+   .then(r=>{ if(!r.ok) throw new Error('send'); SG.busy = false; SG.text = ''; SG.files = []; SG.msg = 'Thanks! Your suggestion was sent.'; SG.kind = 'ok'; if(SG.open) sgPanel(); })
    .catch(()=>{ SG.busy = false; SG.msg = 'Could not send. Check your connection and try again.'; SG.kind = 'err'; if(SG.open) sgPanel(); });
   return;
  }
