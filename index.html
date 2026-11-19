@@ -4354,13 +4354,17 @@ let RENDERED = false, PREV_HASH = '', CUR_HASH = '';
 try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(e){}
 document.addEventListener('click', e=>{ const a = e.target && e.target.closest && e.target.closest('a[href^="#"]'); if(!a || a.getAttribute('href')==='#') return; const q = document.querySelector('.evq'); try{ history.replaceState(Object.assign({}, history.state, {y: window.pageYOffset||0, q: q ? q.value : ''}), ''); }catch(x){} }, true);
 (function(){ let t; window.addEventListener('scroll', ()=>{ clearTimeout(t); t = setTimeout(()=>{ const q = document.querySelector('.evq'); try{ history.replaceState(Object.assign({}, history.state, {y: window.pageYOffset||0, q: q ? q.value : ''}), ''); }catch(e){} }, 150); }, {passive:true}); })();
-/* ---- suggestion box (Google Form behind it) ---- */
+/* ---- suggestion box (Discord channel on the website; Google Form link inside a Claude artifact) ---- */
 const SG_FORM = {"form": "1FAIpQLScUlyfmTNT85QX80ExN4qpC3jmfMn9tvCCeGv-yymcLWHQlHA", "tag": "entry.30754360", "text": "entry.1641845112", "sheet": ""};
-const SG = {open:false, tag:'', text:'', msg:'', kind:'', owner:false, fb:false, busy:false};
-const SG_DIRECT = (()=>{ try{ return /^https?:$/.test(location.protocol) && !/claude|anthropic/i.test(location.hostname) && typeof fetch==='function'; }catch(e){ return false; } })();
+const SG = {open:false, tag:'', text:'', msg:'', kind:'', owner:false, busy:false};
+const SG_HOOK = ["==gRZ5WcnF3d6FWNnREbxpmUQJlYilFSlhWSRh3VK", "JVRipUMxpkNlVGe2FEa0d1XVxWZVhDdzgETnxUYtp", "2NURmUPxWaZ9iM4YzM0YzMzADOxATO3AzM3UTMvM3", "av9GaiV2dvkGch9SbvNmLkJ3bjNXak9yL6MHc0RHa"];
+function sgHook(){ try{ return atob(SG_HOOK.join('').split('').reverse().join('')); }catch(e){ return ''; } }
+const SG_DIRECT = (()=>{ try{ return /^https?:$/.test(location.protocol) && !/claude|anthropic/i.test(location.hostname) && typeof fetch==='function' && typeof FormData==='function' && !!sgHook(); }catch(e){ return false; } })();
+const SG_L10N = {"tr": {"Could not send. Check your connection and try again.": "Gönderilemedi. Bağlantını kontrol edip tekrar dene."}, "pt": {"Could not send. Check your connection and try again.": "Não foi possível enviar. Verifique sua conexão e tente de novo."}, "ko": {"Could not send. Check your connection and try again.": "보내지 못했습니다. 연결을 확인한 뒤 다시 시도하세요.", "Sending…": "보내는 중…", "Thanks! Your suggestion was sent.": "감사합니다! 제안이 전송되었습니다."}};
+function sgL(s, plain){ try{ const m = SG_L10N[typeof LANG==='string' ? LANG : 'en']; if(m && m[s]) return m[s]; }catch(e){} return plain ? (typeof T==='function' ? T(s) : s) : sgT(s); }
 function sgT(s){ return typeof tx==='function' ? tx(s) : s; }
 function sgEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function sgOn(){ return !!(SG_FORM.form && SG_FORM.tag && SG_FORM.text); }
+function sgOn(){ return SG_DIRECT || !!(SG_FORM.form && SG_FORM.tag && SG_FORM.text); }
 function sgUrl(kind){ return 'https://docs.google.com/forms/d/e/' + SG_FORM.form + '/' + kind; }
 function sgFill(){ const p = new URLSearchParams(); p.set(SG_FORM.tag, SG.tag.trim()); p.set(SG_FORM.text, SG.text.trim()); return p; }
 function sgLink(){ return sgUrl('viewform') + '?usp=pp_url&' + sgFill().toString(); }
@@ -4374,8 +4378,8 @@ function sgPanel(){
    <input id="sg-tag" name="tag" type="text" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${sgEsc(sgT('[ABC]PlayerName'))}" required>
    <label for="sg-text">${sgT('Suggestion')}</label>
    <textarea id="sg-text" name="text" maxlength="2000" rows="5" required></textarea>
-   <div class="sgrow">${SG_DIRECT && !SG.fb ? `<button class="sgsend" type="button">${sgT('Send')}</button>` : `<a class="sgsend" href="${sgEsc(sgLink())}" target="_blank" rel="noopener">${sgT(SG.fb ? 'Finish on Google Forms' : 'Send on Google Forms')} <span aria-hidden="true">↗</span></a>`}</div>
-   <p class="sgmsg${SG.kind?' '+SG.kind:''}" role="status" aria-live="polite">${SG.msg ? sgT(SG.msg) : ''}</p>
+   <div class="sgrow">${SG_DIRECT ? `<button class="sgsend" type="button">${sgT('Send')}</button>` : `<a class="sgsend" href="${sgEsc(sgLink())}" target="_blank" rel="noopener">${sgT('Send on Google Forms')} <span aria-hidden="true">↗</span></a>`}</div>
+   <p class="sgmsg${SG.kind?' '+SG.kind:''}" role="status" aria-live="polite">${SG.msg ? sgL(SG.msg) : ''}</p>
   </form>
   ${SG.owner && SG_FORM.sheet ? `<p class="sgown"><a href="${sgEsc(SG_FORM.sheet)}" target="_blank" rel="noopener">${sgT('Your suggestions sheet')} ↗</a></p>` : ''}`;
  const tag = p.querySelector('#sg-tag'), text = p.querySelector('#sg-text'), send = p.querySelector('.sgsend');
@@ -4387,7 +4391,7 @@ function sgPanel(){
  p.querySelector('form').addEventListener('submit', e=>e.preventDefault());
  send.addEventListener('click', sgSend);
 }
-function sgMsg(m, kind){ SG.msg = m; SG.kind = kind || ''; const el = document.querySelector('#sgp .sgmsg'); if(el){ el.className = 'sgmsg' + (SG.kind?' '+SG.kind:''); el.textContent = m ? (typeof T==='function' ? T(m) : m) : ''; } }
+function sgMsg(m, kind){ SG.msg = m; SG.kind = kind || ''; const el = document.querySelector('#sgp .sgmsg'); if(el){ el.className = 'sgmsg' + (SG.kind?' '+SG.kind:''); el.textContent = m ? sgL(m, true) : ''; } }
 /* one link: checks both fields, then opens the form in a new tab with both answers filled in */
 function sgSend(e){
  const p = document.getElementById('sgp'); const tag = p.querySelector('#sg-tag'), text = p.querySelector('#sg-text');
@@ -4396,10 +4400,12 @@ function sgSend(e){
  if(!SG.text.trim()){ e.preventDefault(); text.setAttribute('aria-invalid','true'); sgMsg('Write your suggestion.', 'err'); text.focus(); return; }
  const btn = e.currentTarget;
  if(btn.tagName!=='A'){
-  e.preventDefault(); if(SG.busy) return; SG.busy = true; btn.disabled = true; btn.textContent = (typeof T==='function' ? T('Sending…') : 'Sending…'); sgMsg('', '');
-  fetch(sgUrl('formResponse'), {method:'POST', mode:'no-cors', body: sgFill()})
-   .then(()=>{ SG.busy = false; SG.text = ''; SG.msg = 'Thanks! Your suggestion was sent.'; SG.kind = 'ok'; if(SG.open) sgPanel(); })
-   .catch(()=>{ SG.busy = false; SG.fb = true; SG.msg = 'One more step: tap the button below to send it through Google Forms.'; SG.kind = ''; if(SG.open) sgPanel(); });
+  e.preventDefault(); if(SG.busy) return; SG.busy = true; btn.disabled = true; btn.textContent = sgL('Sending…', true); sgMsg('', '');
+  const fd = new FormData();
+  fd.append('payload_json', JSON.stringify({username:'Guide Suggestions', allowed_mentions:{parse:[]}, embeds:[{author:{name:SG.tag.trim().slice(0,200)}, description:SG.text.trim().slice(0,3900), color:0x2f6fed, footer:{text:'Page: ' + ((location.hash||'').replace(/^#/,'') || 'home') + ' · ' + (typeof LANG==='string' ? LANG.toUpperCase() : 'EN')}}]}));
+  fetch(sgHook() + '?wait=true', {method:'POST', body: fd})
+   .then(r=>{ if(!r.ok) throw new Error('send'); SG.busy = false; SG.text = ''; SG.msg = 'Thanks! Your suggestion was sent.'; SG.kind = 'ok'; if(SG.open) sgPanel(); })
+   .catch(()=>{ SG.busy = false; SG.msg = 'Could not send. Check your connection and try again.'; SG.kind = 'err'; if(SG.open) sgPanel(); });
   return;
  }
  btn.href = sgLink();
@@ -4657,6 +4663,5 @@ if(typeof window!=='undefined'){ window.i18nUnits=i18nUnits; window.i18nKeyOf=i1
 render();
 })();
 </script>
-
 </body>
 </html>
