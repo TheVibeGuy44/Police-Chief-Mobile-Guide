@@ -765,6 +765,8 @@ button.ctb-col:focus-visible{outline:2px solid #fff;outline-offset:2px;border-ra
 .ctb-how li{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:40px;padding:4px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.3}
 .ctb-how li b{flex:none;font:700 14px/1 var(--body);color:var(--acc-t);white-space:nowrap}
 .ctb-how p{margin:10px 0 0;font-size:13px;line-height:1.45;color:var(--fg2)}
+/* w11: no glossary link in the breadcrumb row */
+.cgl{display:none!important}
 </style>
 
 <div class="wrap">
@@ -2810,7 +2812,7 @@ EVENTS.forEach(e=>{ e.name = e.slug==='milestones' ? 'Milestone events' : e.titl
 /* a name in the page language, HTML-safe (for text built in JS that the dictionary pass can't reach) */
 function tx(s){ const e = String(s).replace(/&(?!amp;)/g,'&amp;'); if(typeof T!=='function') return e; let r = T(s); if(r!==s) return r; r = T(e); return r; }
 const HIDDEN_TABS = {events:['almighty','weekly','wars','more'], troops:['gates','split'], marches:['split'], heroes:['overview','pages'], pvp:['ev_at','ev_pp','ev_cw','ev_pc','ev_ss'], buildings:['resources'], diamonds:['packs']};
-const REDIRECT = {'troops-gates':'buildings-gates','troops-split':'marches-lineup','marches-split':'marches-lineup','heroes-overview':'heroes-all','heroes-pages':'heroes-pages-scarlett','heroes-pages-zoc':'heroes-rares','heroes-pages-gus':'heroes-rares','heroes-pages-cassie':'heroes-rares','heroes-pages-alvin':'heroes-rares','pvp-ev_at':'events-e_training','pvp-ev_pp':'events-e_powerplay','pvp-ev_cw':'events-e_capital','pvp-ev_pc':'events-e_prison','pvp-ev_ss':'events-e_showdown','events-e_sapphire':'island-all','rewards-all':'events-all','rewards-ranked':'events-all','rewards-pve':'marches-rallies','rules':'home','tested':'sources','buildings-resources':'buildings-order','diamonds-packs':'diamonds-money','events-weekly':'events-all','events-more':'events-all','events-wars':'events-all'};
+const REDIRECT = {'glossary':'home','troops-gates':'buildings-gates','troops-split':'marches-lineup','marches-split':'marches-lineup','heroes-overview':'heroes-all','heroes-pages':'heroes-pages-scarlett','heroes-pages-zoc':'heroes-rares','heroes-pages-gus':'heroes-rares','heroes-pages-cassie':'heroes-rares','heroes-pages-alvin':'heroes-rares','pvp-ev_at':'events-e_training','pvp-ev_pp':'events-e_powerplay','pvp-ev_cw':'events-e_capital','pvp-ev_pc':'events-e_prison','pvp-ev_ss':'events-e_showdown','events-e_sapphire':'island-all','rewards-all':'events-all','rewards-ranked':'events-all','rewards-pve':'marches-rallies','rules':'home','tested':'sources','buildings-resources':'buildings-order','diamonds-packs':'diamonds-money','events-weekly':'events-all','events-more':'events-all','events-wars':'events-all'};
 const tabShown = (sid, id)=>!(HIDDEN_TABS[sid] && HIDDEN_TABS[sid].indexOf(id)>=0);
 const EVENT_BY = {}; EVENTS.forEach(e=>{ EVENT_BY[e.slug] = e; });
 /* the event's own card(s), taken from its category tab */
@@ -4213,7 +4215,7 @@ function home(){
  return `<div class="stack home"><div class="hhead"><h1>Police Chief Field Manual</h1></div>
  <a class="startcard h" href="#roadmap"><h2 style="margin:0">Roadmap by Chief’s Office level <span class="go">›</span></h2></a>
  <div class="menu">${S.map(s=>`<a class="tile" href="#${s.id}-${s.tabs[0][0]}">${tileArt(s.id)}${NOT_VERIFIED.has(s.id) ? '<span class="nv">Not updated or verified</span>' : ''}<span class="n">${s.n}</span><span class="t">${s.title}</span><span class="s">${s.sub}</span></a>`).join('')}</div>
- <div class="card"><div class="badges"><span class="small"><a href="#events-checklist">Daily checklist ›</a> · <a href="#glossary">Glossary ›</a> · <a href="#sources">About the numbers ›</a></span></div></div>
+ <div class="card"><div class="badges"><span class="small"><a href="#events-checklist">Daily checklist ›</a> · <a href="#sources">About the numbers ›</a></span></div></div>
  <p class="small" style="padding:4px 0 8px">v4 · <button type="button" class="lnk" data-sg="1">Send a correction or idea</button></p></div>`;
 }
 
@@ -4527,7 +4529,7 @@ document.addEventListener('click', e=>{ const a = e.target && e.target.closest &
 (function(){ let t; window.addEventListener('scroll', ()=>{ clearTimeout(t); t = setTimeout(()=>{ const q = document.querySelector('.evq'); try{ history.replaceState(Object.assign({}, history.state, {y: window.pageYOffset||0, q: q ? q.value : ''}), ''); }catch(e){} }, 150); }, {passive:true}); })();
 /* ---- w08 header: banner text, language menu, search across the guide ---- */
 const HB_L10N = {"tr": {"POLICE CHIEF": "POLİS ŞEFİ", "Field Manual": "Saha El Kitabı", "State 171": "Eyalet 171", "Search heroes, events, gear": "Kahraman, etkinlik, ekipman ara", "Search the guide": "Rehberde ara", "Close search": "Aramayı kapat", "Clear": "Temizle", "No matches. Try a shorter word.": "Sonuç yok. Daha kısa bir kelime dene.", "Loading…": "Yükleniyor…", "Search is not available right now.": "Arama şu anda kullanılamıyor."}, "pt": {"POLICE CHIEF": "CHEFE DE POLÍCIA", "Field Manual": "Manual de campo", "State 171": "Estado 171", "Search heroes, events, gear": "Buscar heróis, eventos, equipamentos", "Search the guide": "Buscar no guia", "Close search": "Fechar busca", "Clear": "Limpar", "No matches. Try a shorter word.": "Nada encontrado. Tente uma palavra mais curta.", "Loading…": "Carregando…", "Search is not available right now.": "A busca não está disponível agora."}, "ko": {"POLICE CHIEF": "폴리스 치프", "Field Manual": "야전 교범", "State 171": "171 서버", "Search heroes, events, gear": "영웅, 이벤트, 장비 검색", "Search the guide": "가이드 검색", "Close search": "검색 닫기", "Clear": "지우기", "No matches. Try a shorter word.": "결과가 없어요. 더 짧은 단어로 찾아보세요.", "Loading…": "불러오는 중…", "Search is not available right now.": "지금은 검색을 사용할 수 없어요."}};
-const GS_V = '202611191817';
+const GS_V = '202611191823';
 function hbL(s){ try{ const m = HB_L10N[typeof LANG==='string' ? LANG : 'en']; if(m && m[s]) return m[s]; }catch(e){} return s; }
 function hbEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function hbScroll(){ const hb = document.getElementById('hb'), b = document.getElementById('sgb'); if(hb && b) b.classList.toggle('onart', (window.pageYOffset||0) < hb.offsetHeight - 34); }
