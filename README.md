@@ -36,3 +36,5 @@ Scoring, counted once a change is in the guide (first sender gets the points if 
 - Art for an icon, banner or section: 2 points
 - Layout fix: 1 point
 - Wording and typo fixes: no points
+
+Every award is written down in `points-log.md`. The player with the most points in a week (Monday to Sunday, UTC) is the next Contributor of the Week.
