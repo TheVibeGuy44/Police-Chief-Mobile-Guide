@@ -22,8 +22,17 @@ The leaderboard at `#contributors` reads `contributors.json`, a list of players:
 
 ```json
 [
-  {"name": "[TSR] Darth Ranger", "state": "171", "fixes": 1, "img": "img/contributor-2026-11-19.webp"}
+  {"name": "[TSR] Darth Ranger", "state": "171", "points": 1, "img": "img/contributor-2026-11-19.webp"}
 ]
 ```
 
-`fixes` is how many of the player's fixes made it into the guide; the page sorts by it and puts the top three on the podium. `img` is optional (players without one get their initial). Add a player or raise a count and the site shows it within about ten minutes.
+The page sorts by `points` and puts the top three on the podium. `img` is optional (players without one get their initial). Add a player or raise their points and the site shows it within about ten minutes.
+
+Scoring, counted once a change is in the guide (first sender gets the points if two players send the same thing):
+
+- Adding missing info: 4 to 20 points, depending on how much it adds
+- Correcting something wrong: 5 points
+- Pointing out something useless that gets cut: 3 points
+- Art for an icon, banner or section: 2 points
+- Layout fix: 1 point
+- Wording and typo fixes: no points
